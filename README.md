@@ -40,11 +40,12 @@
 ### [Smart Image Lab (Дипломный проект)](https://github.com/DariaVerseau/diploma)
 *Микросервисное приложение для обработки изображений.*
 
-- **Стек:** Go (Gin), Python (FastAPI, PyTorch), React (Vite, Tailwind), PostgreSQL, Docker, nginx.
-- **Архитектура и БД:** Спроектировала схему БД с `UUID`, `BIGSERIAL` и `TIMESTAMPTZ`. Настроила миграции через `goose` (DDL вынесен из приложения в отдельный сервис `migrate`). Добавила композитный индекс `(user_id, created_at DESC)`, проверила через `EXPLAIN ANALYZE` (Seq Scan → Index Scan).
-- **Безопасность:** Реализовала JWT-аутентификацию через паттерн `TokenManager` (DI). Добавила валидацию секретов (fail-fast при старте) и проверку алгоритма подписи (**защита от alg confusion**).
-- **Production-практики:** Реализовала **Graceful Shutdown** с таймаутами `http.Server` и обработкой `SIGTERM`. Настроила **health-checks**: `/health` (liveness) и `/ready` (readiness) с параллельной проверкой БД и ML-сервиса.
-- **Нагрузочное тестирование (ApacheBench):** `/health` — 1692 RPS при c=50, `/images` (JWT) — 1318 RPS, `/login` (bcrypt) — 46 RPS. По логам выявила **bcrypt как CPU-bound узкое место** login/register (110 ms на запрос), обосновала необходимость rate limiting и горизонтального масштабирования. *(В планах: Redis rate limiting перед bcrypt, blacklist JWT с TTL по `exp`, таймауты и circuit breaker для ML-сервиса, структурированные логи с request-id.)*
+- **Стек:** Go (Gin), Python (FastAPI, PyTorch), React (Vite, Tailwind), PostgreSQL, Docker, nginx, GitHub Actions (CI), GHCR.
+- **Архитектура и БД:** Спроектировала схему БД с `UUID`, `BIGSERIAL` и `TIMESTAMPTZ`. Настроила миграции через `goose` (DDL вынесен в отдельный сервис `migrate`, образ зафиксирован по digest). Добавила композитный индекс `(user_id, created_at DESC)`, проверила через `EXPLAIN ANALYZE`. Настроила пул соединений `pgxpool` (`MaxConns=25`, `MinConns=5`, `MaxConnLifetime=1h`).
+- **Безопасность:** JWT через `TokenManager` (DI), валидация секретов (fail-fast), проверка алгоритма подписи (**защита от alg confusion**), маппинг ошибок (sentinel errors + `errors.Is`).
+- **Production-практики:** Graceful Shutdown (`SIGTERM`, таймауты `http.Server`), health-checks `/health` (liveness) и `/ready` (readiness) с параллельной проверкой БД и ML (timeout 1s). Dockerfile: multi-stage, non-root, `HEALTHCHECK`. Docker Compose: digest, `depends_on` с условиями.
+- **CI (GitHub Actions):** `go vet`, `go test -race -cover`, `govulncheck`, сборка и push Docker-образа в GHCR с кэшированием. *(CD — в планах: деплой в K8s).*
+- **Нагрузочное тестирование (ApacheBench):** `/health` — 1692 RPS, `/images` (JWT) — 1318 RPS, `/login` (bcrypt) — 46 RPS. Выявила **bcrypt как CPU-bound узкое место** login/register (110 ms), обосновала rate limiting и горизонтальное масштабирование.
 
 ### [InventoryWarehouseAPI](https://github.com/DariaVerseau/InventoryWarehouseAPI)
 *Программа учёта складского инвентаря.*
