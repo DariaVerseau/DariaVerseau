@@ -49,9 +49,16 @@
 - **Нагрузочное тестирование (ApacheBench):** `/health` — 1692 RPS, `/images` (JWT) — 1318 RPS, `/login` (bcrypt) — 46 RPS. Выявила **bcrypt как CPU-bound узкое место** login/register (110 ms), обосновала rate limiting и горизонтальное масштабирование.
 
 ### [InventoryWarehouseAPI](https://github.com/DariaVerseau/InventoryWarehouseAPI)
-*Программа учёта складского инвентаря.*
-- **Стек:** C# (ASP.NET Core, EF Core), PostgreSQL, Clean Architecture.
-- **Что сделано:** Реализовала REST API с CRUD, пагинацией, фильтрацией и PATCH-запросами. Настроила JWT-аутентификацию и Repository Pattern.
+*Программа учёта складского инвентаря (REST API).*
+
+- **Стек:** C# 12, ASP.NET Core 9, EF Core, PostgreSQL, Clean Architecture, Repository Pattern, JWT.
+- **Что сделано:** 
+  - Реализовала REST API с полным CRUD, пагинацией, фильтрацией и сортировкой.
+  - Добавила частичное обновление сущностей через PATCH-запросы.
+  - Настроила JWT-аутентификацию и авторизацию пользователей.
+  - Спроектировала архитектуру с разделением на слои API, BLL, DAL, DTO (Clean Architecture).
+  - Использовала Repository Pattern для инкапсуляции доступа к данным.
+  - Настроила миграции EF Core (Code First) для управления схемой PostgreSQL.
 
 ### [Frontend для дипломного проекта](https://github.com/DariaVerseau/FrontendReactForDiploma)
 *SPA на React для взаимодействия с API.*
