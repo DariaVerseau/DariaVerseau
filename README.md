@@ -46,7 +46,7 @@
 - **Unit-тестирование:** Покрыла критичные модули Go-тестами (`auth` — 88%, `middleware` — 100%, `health` — 100%, `services` — 95%). Использую `httptest` для handlers, моки репозиториев для сервисов, табличные тесты и `go test -race`. Общее покрытие проекта — 12.1% (за счёт нетронутых `repositories` и `mlclient`, которые требуют `testcontainers`/ML-сервиса).
 - **Production-практики:** Graceful Shutdown (`SIGTERM`, таймауты `http.Server`), health-checks `/health` (liveness) и `/ready` (readiness) с параллельной проверкой БД и ML (timeout 1s). Dockerfile: multi-stage, non-root, `HEALTHCHECK`. Docker Compose: digest, `depends_on` с условиями.
 - **CI (GitHub Actions):** `go vet`, `go test -race -cover`, `govulncheck`, сборка и push Docker-образа в GHCR с кэшированием. *(CD — в планах: деплой в K8s).*
-- **Нагрузочное тестирование (ApacheBench):** /images` (JWT) — 1318 RPS, `/login` (bcrypt) — 46 RPS. Выявила **bcrypt как CPU-bound узкое место** login/register (110 ms), обосновала rate limiting и горизонтальное масштабирование.
+- **Нагрузочное тестирование (ApacheBench):** /images` эндпоинт списка изображений (с JWT, пагинация, PostgreSQL) — 1540 RPS при c=50, p99 = 44 мс; `/login` (bcrypt) — 46 RPS. Выявила **bcrypt как CPU-bound узкое место** login/register (110 ms), обосновала rate limiting и горизонтальное масштабирование.
 
 ### [InventoryWarehouseAPI](https://github.com/DariaVerseau/InventoryWarehouseAPI)
 *Программа учёта складского инвентаря (REST API).*
